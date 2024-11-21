@@ -128,101 +128,117 @@ void displayUserInfo(const vector<MyInfo> &users)
     }
 }
 
-// Function to handle showMenu
-void showMenu(const vector<MyInfo> &users)
+
+void menuOptions(vector<MyInfo> &users)
 {
-    bool anyUserLoggedin = false;
+    int choice;
+    bool isAnyUserLoggedIn = false;
+    string username;
+
+    // Check if any user is logged in
     for (const auto &user : users)
     {
         if (user.getLoginStatus())
         {
-            anyUserLoggedin = true;
+            isAnyUserLoggedIn = true;
+            username = user.getUsername();
             break;
         }
     }
 
-    int optionIndex = 1;
-
-    cout << "\nChoose an option:\n";
-    if (!anyUserLoggedin)
-    {
-        cout << optionIndex++ << ". Register user\n";
-        cout << optionIndex++ << ". Login user\n";
-    }
-    else
-    {
-        cout << optionIndex++ << ". Logout user\n";
-    }
-    cout << optionIndex++ << ". Show user info\n";
-    cout << optionIndex++ << ". Exit\n";
-
-    cout << "Enter your choice: ";
-}
-
-int main()
-{
-    vector<MyInfo> users;
-    int choice;
-
-    showMenu(users);
     do
     {
-        bool isAnyUserLoggedIn = false;
+        // Display menu based on login status
+        if (isAnyUserLoggedIn)
+        {
+            cout << "\nMenu (Logged In as"<< username <<"):\n";
+            cout << "1. Logout\n";
+            cout << "2. Display User Info\n";
+            cout << "3. Exit\n";
+        }
+        else
+        {
+            cout << "\nMenu (Not Logged In):\n";
+            cout << "1. Register\n";
+            cout << "2. Login\n";
+            cout << "3. Display User Info\n";
+            cout << "4. Exit\n";
+        }
+
+        cout << "Enter your choice: ";
         cin >> choice;
 
         switch (choice)
         {
         case 1:
-            for (const auto &user : users)
+            if (isAnyUserLoggedIn)
             {
-                if (user.getLoginStatus())
-                {
-                    isAnyUserLoggedIn = true;
-                    cout << "\033[1;32mCurrent user - " << user.getUsername() << "\033[0m" << endl;
-                    break;
-                }
-            }
-
-            if (!isAnyUserLoggedIn)
-            {
-                registerUser(users);
+                Logout(users); // Assume Logout handles login state changes
+                isAnyUserLoggedIn = false; // Update status
             }
             else
             {
-                cout << "You cannot register a new user while someone is logged in.\n";
+                registerUser(users); // Assume registerUser handles user registration
             }
             break;
 
         case 2:
-            for (const auto &user : users)
+            if (isAnyUserLoggedIn)
             {
-
-                if (!user.getLoginStatus())
+                displayUserInfo(users); // Assume displayUserInfo shows user details
+            }
+            else
+            {
+                auth(users); // Assume auth handles login
+                // Update login status after auth
+                for (const auto &user : users)
                 {
-                    auth(users);
-                }
-                else
-                {
-                    Logout(users);
+                    if (user.getLoginStatus())
+                    {
+                        isAnyUserLoggedIn = true;
+                        break;
+                    }
                 }
             }
             break;
 
         case 3:
-            displayUserInfo(users);
+            if (!isAnyUserLoggedIn)
+            {
+                displayUserInfo(users);
+            }
+            else
+            {
+                cout << "Exiting the program. Goodbye!\n";
+                choice = 4; // Set to exit
+            }
             break;
 
         case 4:
-            showMenu(users);
+            if (!isAnyUserLoggedIn)
+            {
+                cout << "Exiting the program. Goodbye!\n";
+            }
+            else
+            {
+                cout << "Invalid choice. Please try again.\n";
+            }
+            break;
 
-            break;
-        case 5:
-            cout << "Exiting the program. Goodbye!\n";
-            break;
         default:
             cout << "Invalid choice. Please try again.\n";
+            break;
         }
-    } while (choice != 5);
+
+    } while (choice != 4);
+}
+
+int main()
+{
+    vector<MyInfo> users;
+
+    // showMenu(users);
+    menuOptions(users);
 
     return 0;
 }
